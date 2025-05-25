@@ -5,14 +5,22 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Task Organizer")
-        self.open_file()
+        
+        sheet = self.open_file()
+        data = self.get_data(sheet)
+        print(data)
 
     def open_file(self):
         file_dialog = QFileDialog()
         file_path, _ = file_dialog.getOpenFileName(self, "Open Excel file", "", "Excel Files (*.xlsx)")
-        workbook = openpyxl.load_workbook(filename=file_path)
+        workbook = openpyxl.load_workbook(file_path)
         sheet = workbook.active
-        things = []
+
+        return sheet
+
+    def get_data(self, sheet):
+        data = []
+
         for row in sheet:
             if row[0].value == None:
                 break
@@ -20,8 +28,9 @@ class MainWindow(QMainWindow):
             description = row[1].value
             link = row[1].hyperlink.target if row[1].hyperlink else None
 
-            things.append([title, description, link])
-        print(things)
+            data.append([title, description, link])
+        
+        return data
 
 
 app = QApplication([])
