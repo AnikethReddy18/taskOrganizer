@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog
+from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog, QGridLayout, QLabel, QWidget
 import openpyxl
 
 class MainWindow(QMainWindow):
@@ -8,7 +8,16 @@ class MainWindow(QMainWindow):
         
         sheet = self.open_file()
         data = self.get_data(sheet)
-        print(data)
+        
+        layout = QGridLayout()
+
+        for row_index,row in enumerate(data):
+            for column_index,cell in enumerate(row):
+                layout.addWidget(QLabel(cell), row_index, column_index)
+
+        widget = QWidget()
+        widget.setLayout(layout)
+        self.setCentralWidget(widget)
 
     def open_file(self):
         file_dialog = QFileDialog()
