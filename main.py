@@ -2,6 +2,7 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QFileDialog, QScrollArea
                              QGridLayout, QLabel, QWidget, QPushButton)
 
 import openpyxl
+import random
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -13,6 +14,7 @@ class MainWindow(QMainWindow):
         self.done_rows = []
         sheet = self.open_file()
         self.get_data(sheet)
+        self.row_widgets = []
 
         self.display_data()
 
@@ -54,6 +56,7 @@ class MainWindow(QMainWindow):
                 layout.addWidget(label, 0, column_index)
 
         select_random_button = QPushButton("Select Random")
+        select_random_button.pressed.connect(self.select_random_button_was_pressed)
         layout.addWidget(select_random_button, 0, 2, 1, 2)    
         
         for row_index,row in enumerate(self.undone_rows):
@@ -67,12 +70,13 @@ class MainWindow(QMainWindow):
             self.columns = len(row)
             
             layout.addWidget(button, row_index+1, self.columns)
+            self.row_widgets.append(button)
 
         widget = QWidget()
         widget.setLayout(layout)
-        scroll = QScrollArea()
-        scroll.setWidget(widget)
-        self.setCentralWidget(scroll)
+        self.scroll = QScrollArea()
+        self.scroll.setWidget(widget)
+        self.setCentralWidget(self.scroll)
 
     def done_button_was_pressed(self):
         index = self.sender().property('index')
@@ -82,10 +86,14 @@ class MainWindow(QMainWindow):
         removed_row = self.undone_rows.pop(index)
         self.done_rows.append(removed_row)
         self.setCentralWidget(QWidget())
+        self.row_widgets = []
         self.display_data()
     
     def select_random_button_was_pressed(self):
-        pass 
+        selected_row_index = random.randint(0, len(self.undone_rows)-1)
+        elem = self.row_widgets[selected_row_index]
+        elem.setStyleSheet("color: red")
+        self.scroll.ensureWidgetVisible(elem)
 
 app = QApplication([])
 window = MainWindow()
