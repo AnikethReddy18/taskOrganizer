@@ -9,10 +9,12 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Task Organizer")
         self.resize(820, 400)
 
+        self.undone_rows =[]
+        self.done_rows = []
         sheet = self.open_file()
-        data = self.get_data(sheet)
+        self.get_data(sheet)
 
-        self.display_data(data)
+        self.display_data()
 
     def open_file(self):
         #file_dialog = QFileDialog()
@@ -28,36 +30,43 @@ class MainWindow(QMainWindow):
         return sheet
 
     def get_data(self, sheet):
-        data = []
 
         self.done_status = []
-        for row in sheet:
+        for i, row in enumerate(sheet.iter_rows()):
+            if i == 0:
+                continue
             if row[0].value == None:
                 break
             title = row[0].value
             description = row[1].value
             link = row[1].hyperlink.target if row[1].hyperlink else None
-            self.done_status.append(1 if row[2].value == "Done" else 0)
-
-            data.append([title, description, link])
-        return data
+            if row[2].value == "Done":
+                self.done_rows.append([title, description, link])
+            else:
+                self.undone_rows.append([title, description, link])        
     
-    def display_data(self, data):
+    def display_data(self):
         layout = QGridLayout()
 
-        for row_index,row in enumerate(data):
-            if(self.done_status[row_index] == 1):
-                continue
+        for column_index,cell in enumerate(list(self.workbook.active.iter_rows())[0]):
+                label = QLabel(cell.value)
+                label.setWordWrap(True)
+                layout.addWidget(label, 0, column_index)
+
+        select_random_button = QPushButton("Select Random")
+        layout.addWidget(select_random_button, 0, 2, 1, 2)    
+        
+        for row_index,row in enumerate(self.undone_rows):
             for column_index,cell in enumerate(row):
                 label = QLabel(cell)
                 label.setWordWrap(True)
-                layout.addWidget(label, row_index, column_index)
+                layout.addWidget(label, row_index+1, column_index)
             button = QPushButton("Done")
             button.clicked.connect(self.done_button_was_pressed)
             button.setProperty("index", row_index)
             self.columns = len(row)
             
-            layout.addWidget(button, row_index, self.columns)
+            layout.addWidget(button, row_index+1, self.columns)
 
         widget = QWidget()
         widget.setLayout(layout)
@@ -70,11 +79,13 @@ class MainWindow(QMainWindow):
         self.workbook.active.cell(row=index+1, column=self.columns).value = "Done"
         self.workbook.save(self.file_path)
 
-        data = self.get_data(self.workbook.active)
+        removed_row = self.undone_rows.pop(index)
+        self.done_rows.append(removed_row)
         self.setCentralWidget(QWidget())
-        self.display_data(data)
+        self.display_data()
     
-        
+    def select_random_button_was_pressed(self):
+        pass 
 
 app = QApplication([])
 window = MainWindow()
