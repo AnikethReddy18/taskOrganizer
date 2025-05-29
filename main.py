@@ -10,7 +10,7 @@ class MainWindow(QMainWindow):
 
         # Window Management
         self.setWindowTitle("Task Organizer")
-        self.resize(820, 400)
+        self.resize(920, 400)
 
         # Initialize Rows
         self.rows =[]
@@ -26,7 +26,8 @@ class MainWindow(QMainWindow):
     def open_file(self):
         # Open Excel File
         file_dialog = QFileDialog()
-        self.file_path, _ = file_dialog.getOpenFileName(self, "Open Excel file", "", "Excel Files (*.xlsx)")
+        #self.file_path, _ = file_dialog.getOpenFileName(self, "Open Excel file", "", "Excel Files (*.xlsx)")
+        self.file_path = "/home/aniketh/Downloads/DSA.xlsx"
         self.workbook = openpyxl.load_workbook(self.file_path)
         sheet = self.workbook.active
 
@@ -76,13 +77,21 @@ class MainWindow(QMainWindow):
                 label = QLabel(cell)
                 label.setWordWrap(True)
                 layout.addWidget(label, row_index+1, column_index)
-            button = QPushButton("Done")
-            button.clicked.connect(self.done_button_was_pressed)
-            button.setProperty("index", row_index)
+
+            # Copy Button    
+            copy_button = QPushButton("Copy")
+            copy_button.clicked.connect(self.copy_button_was_pressed)
+            copy_button.setProperty("url", row[2])
+
+            # Done Button
+            done_button = QPushButton("Done")
+            done_button.clicked.connect(self.done_button_was_pressed)
+            done_button.setProperty("index", row_index)
             self.columns = len(row)
             
-            layout.addWidget(button, row_index+1, self.columns)
-            self.row_widgets.append(button)
+            layout.addWidget(copy_button, row_index+1, self.columns)
+            layout.addWidget(done_button, row_index+1, self.columns+1)
+            self.row_widgets.append(done_button)
 
         # Make layout scrollable
         widget = QWidget()
@@ -102,12 +111,18 @@ class MainWindow(QMainWindow):
         # Update display to new data
         self.setCentralWidget(QWidget())
         self.display_data()
-    
+        
+    def copy_button_was_pressed(self):
+        url = self.sender().property('url')
+        clipboard = QApplication.clipboard()
+        clipboard.setText(url)
+
     def select_random_button_was_pressed(self):
         selected_row_index = random.randint(0, self.done_rows.count(0)-1)
         elem = self.row_widgets[selected_row_index]
         elem.setStyleSheet("color: red")
         self.scroll.ensureWidgetVisible(elem)
+    
 
 app = QApplication([])
 window = MainWindow()
