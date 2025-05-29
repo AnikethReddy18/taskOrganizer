@@ -26,8 +26,7 @@ class MainWindow(QMainWindow):
     def open_file(self):
         # Open Excel File
         file_dialog = QFileDialog()
-        #self.file_path, _ = file_dialog.getOpenFileName(self, "Open Excel file", "", "Excel Files (*.xlsx)")
-        self.file_path = "/home/aniketh/Downloads/DSA.xlsx"
+        self.file_path, _ = file_dialog.getOpenFileName(self, "Open Excel file", "", "Excel Files (*.xlsx)")
         self.workbook = openpyxl.load_workbook(self.file_path)
         sheet = self.workbook.active
 
